@@ -7,6 +7,7 @@ app = Flask(__name__)
 
 def convStepOne(fileb64):
     return fileb64 + "a"
+dreammaker = DreamMaker()
 
 @app.route('/api/dream', methods=['POST'])
 def dreamimage():
@@ -22,7 +23,6 @@ def dreamimage():
     if noct is None:
         noct = 69
     #print("lr: " + lr + "size: " + size + "noct: " + noct)
-    dreammaker = DreamMaker()
     shit = fileb64.convToPng()
     shitdone = dreammaker.dream(shit, size=size, lr=lr, nOct=noct)
     print(shitdone)
