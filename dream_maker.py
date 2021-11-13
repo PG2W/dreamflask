@@ -7,7 +7,7 @@ import PIL.Image as Image
 from tqdm import tqdm
 import os
 
-import matplotlib.pyplot as plt
+#selfimport matplotlib.pyplot as plt
 
 
 class DreamMaker():
@@ -16,9 +16,9 @@ class DreamMaker():
         model_dir = os.path.join(self.current_dir, 'models')
         self.device = torch.device(
             'cuda:0' if torch.cuda.is_available() else 'cpu')
-        self.model = models.vgg19_bn(progress=False)
-        self.model.load_state_dict(torch.load(
-            os.path.join(model_dir, 'vgg19_bn')))
+        self.model = models.vgg19_bn(pretrained=True)
+        #self.model.load_state_dict(torch.load(
+        #    os.path.join(model_dir, 'vgg19_bn')))
         print(self.model.eval())
         
 

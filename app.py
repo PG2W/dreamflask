@@ -12,9 +12,19 @@ def convStepOne(fileb64):
 def dreamimage():
     content = request.get_json()
     fileb64 = Conversion(content['file'])
+    lr = float(content['lr'])
+    size = int(content['size'])
+    noct = int(content['noct'])
+    if lr is None:
+        lr = 69
+    if size is None:
+        size = 69
+    if noct is None:
+        noct = 69
+    #print("lr: " + lr + "size: " + size + "noct: " + noct)
     dreammaker = DreamMaker()
     shit = fileb64.convToPng()
-    shitdone = dreammaker.dream(shit, size=50, nOct=1)
+    shitdone = dreammaker.dream(shit, size=size, lr=lr, nOct=noct)
     print(shitdone)
     baseshit = fileb64.convToBase64(shitdone)
     return baseshit
