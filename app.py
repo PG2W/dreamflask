@@ -7,11 +7,11 @@ app = Flask(__name__)
 
 def convStepOne(fileb64):
     return fileb64 + "a"
-dreammaker = DreamMaker()
 
 @app.route('/api/dream', methods=['POST'])
 def dreamimage():
     content = request.get_json()
+    dreammaker = DreamMaker()
     fileb64 = Conversion(content['file'])
     lr = float(content['lr'])
     size = int(content['size'])
