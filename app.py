@@ -35,7 +35,6 @@ def dreamimage():
 
     shit = fileb64.convToPng()
     shitdone = dreammaker.dream(shit, size=size, lr=lr, nOct=noct, nSubLayer=nsublayer)
-    print(shitdone)
     baseshit = fileb64.convToBase64(shitdone)
     return baseshit
 
