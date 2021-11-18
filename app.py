@@ -13,18 +13,28 @@ def dreamimage():
     content = request.get_json()
     dreammaker = DreamMaker()
     fileb64 = Conversion(content['file'])
-    lr = float(content['lr'])
-    size = int(content['size'])
-    noct = int(content['noct'])
-    if lr is None:
-        lr = 69
-    if size is None:
-        size = 69
-    if noct is None:
-        noct = 69
-    #print("lr: " + lr + "size: " + size + "noct: " + noct)
+    try:
+        lr = float(content['lr'])
+    except:
+        lr = 0.002
+    
+    try:
+        size = int(content['size'])
+    except:
+        size = 500
+
+    try:
+        noct = int(content['noct'])
+    except:
+        noct = 2
+    
+    try:
+        nsublayer = int(content['nsublayer'])
+    except:
+        nsublayer = 41
+
     shit = fileb64.convToPng()
-    shitdone = dreammaker.dream(shit, size=size, lr=lr, nOct=noct)
+    shitdone = dreammaker.dream(shit, size=size, lr=lr, nOct=noct, nSubLayer=nsublayer)
     print(shitdone)
     baseshit = fileb64.convToBase64(shitdone)
     return baseshit
