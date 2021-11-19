@@ -4,10 +4,12 @@ from torch.autograd import Variable
 from torchvision import transforms
 import torchvision.models as models
 import PIL.Image as Image
+import PIL
+from image4layer import Image4Layer
 from tqdm import tqdm
 import os
 
-#selfimport matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 
 class DreamMaker():
@@ -20,9 +22,25 @@ class DreamMaker():
         self.model.load_state_dict(torch.load(
             os.path.join(model_dir, 'vgg19_bn')))
         print(self.model.eval())
-        
 
         print(f'utilizing {self.device}')
+
+    def lsd(self, image, size=400, blendFactor=0.9, nLayer=0, nSubLayer=18, iterations=10, lr=0.01, nOct=3):
+        sizedImage = self.toPNG(self.toTensor(image, size=size))
+        colors = self.dream(image, size=size, nLayer=nLayer,
+                            nSubLayer=nSubLayer, iterations=iterations, lr=lr, nOct=nOct)
+
+        saturation = PIL.ImageEnhance.Color(colors)
+        sharpness = PIL.ImageEnhance.Sharpness(sizedImage)
+
+        colors = saturation.enhance(1.2)
+        sizedImage = sharpness.enhance(2)
+
+        meltedImage = Image4Layer.luminosity(colors, sizedImage)
+        meltedTensor = self.toTensor(meltedImage, size=size)
+        dreamTensor = self.toTensor(colors, size=size)
+
+        return self.toPNG(meltedTensor * blendFactor + dreamTensor * (1 - blendFactor))
 
     def dream(self, image, size=256, nLayer=0, nSubLayer=41,
               lr=0.001, iterations=40, nOct=2, octZoom=2):
@@ -38,7 +56,7 @@ class DreamMaker():
         layers = list(self.model.children())[:nLayer]
         sub_layers = list(list(self.model.children())[
                           nLayer].children())[:nSubLayer]
-        
+
         dream_model = nn.Sequential(*(layers + sub_layers)).to(self.device)
         x = x.to(self.device)
 
@@ -47,8 +65,6 @@ class DreamMaker():
         for _ in range(nOct - 1):
             oct = self.zoom(oct, octZoom)
             octaves.append(oct)
-
-        
 
         detail = torch.zeros_like(octaves[-1])
         for oct, oct_base in enumerate(octaves[::-1]):
@@ -60,18 +76,18 @@ class DreamMaker():
             dream_x = self.dreamGen(in_x, dream_model, lr, iterations)
             detail = dream_x - oct_base
 
-        return dream_x
+        return dream_x  # * 0.7 + x.data * 0.3
 
     def dreamGen(self, x, model, lr, iterations):
         x = Variable(x, requires_grad=True)
-        #blur = transforms.GaussianBlur(5, 0.1)
+        blur = transforms.GaussianBlur(5, 0.1)
         for _ in tqdm(range(iterations)):
             model.zero_grad()
             out = model(x)
             loss = out.norm()
             loss.backward()
-            #g = blur(x.grad)
-            g = x.grad
+            g = blur(x.grad)
+            #g = x.grad
             avr_grad = torch.abs(x.grad.data).mean()
             norm_lr = lr / avr_grad
             x.data += g[:] * norm_lr
@@ -79,8 +95,6 @@ class DreamMaker():
             x.grad.data.zero_()
 
         return x.data
-
-
 
     @staticmethod
     def clip(x):
@@ -109,4 +123,3 @@ class DreamMaker():
     @staticmethod
     def toPNG(tensor):
         return transforms.ToPILImage()(tensor[0])
-

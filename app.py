@@ -22,7 +22,6 @@ def dreamimage():
         size = int(content['size'])
     except:
         size = 500
-
     try:
         noct = int(content['noct'])
     except:
@@ -33,8 +32,13 @@ def dreamimage():
     except:
         nsublayer = 41
 
+    try:
+        drug = int(content['lsd'])
+    except:
+        drug = "lsd"
+
     shit = fileb64.convToPng()
-    shitdone = dreammaker.dream(shit, size=size, lr=lr, nOct=noct, nSubLayer=nsublayer)
+    shitdone = dreammaker.lsd(shit, size=size, lr=lr, nOct=noct, nSubLayer=nsublayer)
     baseshit = fileb64.convToBase64(shitdone)
     return baseshit
 
